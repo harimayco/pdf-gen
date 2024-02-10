@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- set viewport with no zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Document</title>
+  <style>
+    .text-field {
+      width: 300px;
+      height: 40px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5 5px;
+    }
+    .xyfield {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5 5px;
+    }
+    .row {margin-bottom: 8px;}
+
+  </style>
+</head>
+<body>
+  <div class="row">Pilih PDF: <input type="file" id="file"></div>
+  <form id="mainform" method="POST">
+
+  </form>
+  <!-- load  jquery cdn  -->
+  <script src="jquery.js"></script>
+  <script>
+
+    //get query string v
+    let v  = new URLSearchParams(window.location.search).get('v');
+    if(v == null){
+      v = 1;
+    }else{
+      v = parseInt(v);
+    }
+
+    $(document).ready(function(){
+      // on upload file
+      $('#file').on('change', function(){
+        // get file
+        let file = this.files[0];
+
+        //egt filename
+        let filename = file.name;
+        localStorage.setItem('filename', filename);
+        // save file blob to localstorage with toDataUrl
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(){
+          localStorage.setItem('file', reader.result);
+        }
+        //localStorage.setItem('file', fileUrl);
+      });
+
+      $('#mainform').submit(function(event){
+        event.preventDefault();
+        const formData = serializeForm(event.target);
+        console.log(formData)
+        // save form daata to local storage
+        localStorage.setItem('fields', JSON.stringify(formData));
+        window.location = "./index.html?ls=true&v="+v;
+      });
+    })
+  
+    function handleUpload(event) {
+      const file = event.target.files[0];
+      // check if file is pdf
+      if (file.type !== 'application/pdf') {
+        alert('Please upload a pdf file');
+        return;
+      }
+
+
+      
+
+      // store file in local storage
+      localStorage.setItem('file', file);
+    }
+
+    var fields = [
+    {
+      text: "Jumlah Orang",
+      x: 448,
+      y:137
+    },
+    {
+      text: "Tanggal mulai",
+      x: 133,
+      y:568
+    },
+    {
+      text: "Jam Mulai",
+      x: 133,
+      y:588
+    },
+    {
+      text: "Tanggal Selesai",
+      x: 433,
+      y:568
+    },
+    {
+      text: "Jam Selesai",
+      x: 433,
+      y:588
+    },
+    {
+      text: "Total Jam",
+      x: 133,
+      y:609
+    },
+    {
+      text: "Nama Pekerja 1",
+      x: 133,
+      y:630
+    },
+    {
+      text: "Nama Pekerja 2",
+      x: 133,
+      y:650
+    },
+    
+    {
+      text: "Nama Pekerja 3",
+      x: 433,
+      y:630
+    },
+    {
+      text: "Nama Pekerja 4",
+      x: 433,
+      y:650
+    },
+    {
+      text: "Status (%)",
+      x: 433,
+      y:609
+    },
+    {
+      text: "Comment",
+      x: 17,
+      y:700
+    }
+  ];
+
+  // write text-field hthml with fields
+
+  var html = "";
+  for (var i = 0; i < fields.length; i++) {
+    html += '<div class="row"><input type="hidden" name="field['+i+'][id]" value="'+1000+i+'">'
+    if(fields[i].text == "Comment"){
+      html += '<textarea placeholder="'+fields[i].text+'" name="field['+i+'][text]" cols="50" rows="3"></textarea>';
+    }else{
+      html +=  '<input class="text-field" placeholder="'+fields[i].text+'" type="text" name="field['+i+'][text]" /> ';
+    }
+    html += '<div style="display:none">"positionX: <input class="xyfield" type="text" value="'+fields[i].x+'" name="field['+i+'][x]" /> positionY: <input class="xyfield" type="text" value="'+fields[i].y+'" name="field['+i+'][y]" /></div></div>';
+  }
+  html += '<div class="row"><button type="submit">Submit</button></div>';
+  // put html innside form#main
+  document.getElementById("mainform").innerHTML = html;
+
+  function update(data, keys, value) {
+    if (keys.length === 0) {
+      // Leaf node
+      return value;
+    }
+  
+    let key = keys.shift();
+    if (!key) {
+      data = data || [];
+      if (Array.isArray(data)) {
+        key = data.length;
+      }
+    }
+  
+    // Try converting key to a numeric value
+    let index = +key;
+    if (!isNaN(index)) {
+      // We have a numeric index, make data a numeric array
+      // This will not work if this is a associative array 
+      // with numeric keys
+      data = data || [];
+      key = index;
+    }
+    
+    // If none of the above matched, we have an associative array
+    data = data || {};
+  
+    let val = update(data[key], keys, value);
+    data[key] = val;
+  
+    return data;
+  }
+  
+  function serializeForm(form) {
+    return Array.from((new FormData(form)).entries())
+      .reduce((data, [field, value]) => {
+        let [_, prefix, keys] = field.match(/^([^\[]+)((?:\[[^\]]*\])*)/);
+  
+        if (keys) {
+          keys = Array.from(keys.matchAll(/\[([^\]]*)\]/g), m => m[1]);
+          value = update(data[prefix], keys, value);
+        }
+        data[prefix] = value;
+        return data;
+      }, {});
+  }
+
+  </script>
+</body>
+</html>
