@@ -63,7 +63,7 @@
       $('#mainform').submit(function(event){
         event.preventDefault();
         const formData = serializeForm(event.target);
-        console.log(formData)
+        //console.log(formData)
         // save form daata to local storage
         localStorage.setItem('fields', JSON.stringify(formData));
         window.location = "./index.html?ls=true&v="+v;
@@ -162,7 +162,15 @@
     if(fields[i].text == "Comment"){
       html += '<textarea placeholder="'+fields[i].text+'" name="field['+i+'][text]" cols="50" rows="3"></textarea>';
     }else{
-      html +=  '<input class="text-field" placeholder="'+fields[i].text+'" type="text" name="field['+i+'][text]" /> ';
+      html += '<label style="display:block;font-size:small">'+fields[i].text+'</label>';
+      // if text contains "tanggal" then add datepicker if text contains "jam" then add timepicker
+      if(fields[i].text.toLowerCase().includes("tanggal")){
+        html +=  '<input class="text-field" type="date" name="field['+i+'][text]" /> ';
+      }else if(fields[i].text.toLowerCase().includes("jam")){
+        html +=  '<input class="text-field" type="time" name="field['+i+'][text]" /> ';
+      }else{
+        html +=  '<input class="text-field" type="text" name="field['+i+'][text]" /> ';
+      }
     }
     html += '<div style="display:none">"positionX: <input class="xyfield" type="text" value="'+fields[i].x+'" name="field['+i+'][x]" /> positionY: <input class="xyfield" type="text" value="'+fields[i].y+'" name="field['+i+'][y]" /></div></div>';
   }
@@ -171,6 +179,8 @@
   document.getElementById("mainform").innerHTML = html;
 
   function update(data, keys, value) {
+    //alert('value', value);
+    
     if (keys.length === 0) {
       // Leaf node
       return value;
@@ -196,6 +206,8 @@
     
     // If none of the above matched, we have an associative array
     data = data || {};
+
+    
   
     let val = update(data[key], keys, value);
     data[key] = val;
@@ -206,6 +218,11 @@
   function serializeForm(form) {
     return Array.from((new FormData(form)).entries())
       .reduce((data, [field, value]) => {
+        // if value match YYY-MM-DD then convert to DD/MM/YYYY
+        if(value.match(/^\d{4}-\d{2}-\d{2}$/)){
+          value = value.split('-').reverse().join('/');
+        }
+
         let [_, prefix, keys] = field.match(/^([^\[]+)((?:\[[^\]]*\])*)/);
   
         if (keys) {
