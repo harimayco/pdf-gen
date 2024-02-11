@@ -166,7 +166,7 @@
       // if text contains "tanggal" then add datepicker if text contains "jam" then add timepicker
       if(fields[i].text.toLowerCase().includes("tanggal")){
         html +=  '<input class="text-field" type="date" name="field['+i+'][text]" /> ';
-      }else if(fields[i].text.toLowerCase().includes("jam")){
+      }else if(fields[i].text.toLowerCase() ===  "jam mulai" || fields[i].text.toLowerCase() ===  "jam selesai"){
         html +=  '<input class="text-field" type="time" name="field['+i+'][text]" /> ';
       }else{
         html +=  '<input class="text-field" type="text" name="field['+i+'][text]" /> ';
